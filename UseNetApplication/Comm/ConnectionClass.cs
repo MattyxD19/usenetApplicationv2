@@ -17,7 +17,7 @@ namespace UseNetApplication.Comm
         private string userPassword;
         private string returnMessage;
 
-        public string ServerName
+        public  string ServerName
         {
             get
             {
@@ -90,7 +90,8 @@ namespace UseNetApplication.Comm
             byte[] authpass = Encoding.UTF8.GetBytes("authinfo PASS " + userPassword + "\n");
             byte[] userCommand = Encoding.UTF8.GetBytes("" + "\n");
 
-            socket = new TcpClient(ServerName, ServerPort);
+            socket = new TcpClient(serverName, serverPort);
+
             ns = socket.GetStream();
 
             reader = new StreamReader(ns, Encoding.UTF8);
@@ -101,46 +102,62 @@ namespace UseNetApplication.Comm
             Console.WriteLine(recieveMessage);
 
             ns.Write(authpass, 0, authpass.Length);
+            
             recieveMessage = reader.ReadLine();
             Console.WriteLine(recieveMessage);
 
             ns.Flush();
 
             Console.WriteLine("Got this message {0} back from the server", recieveMessage);
+
             
-         
-            ns.Close();
+
+            //socket.Close();
+            //ns.Close();
         }
 
         public string CreateMessage(string message)
         {
-            socket = new TcpClient(ServerName, ServerPort);
+            //socket.Connect();
             ns = socket.GetStream();
-            reader = new StreamReader(ns, Encoding.UTF8);
+            //reader = new StreamReader(ns, Encoding.UTF8);
 
             byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
 
             ns.Write(userCommand, 0, userCommand.Length);
+            String recieveMessage = reader.ReadLine();
+            message = recieveMessage;
 
+            while (reader.Peek() >= 0)
+            {
+                message = reader.ReadLine();
+            }
+
+            Console.WriteLine(message);
             ns.Flush();
 
-            reader.Close();
+            
             socket.Close();
             ns.Close();
-
+            reader.Close();
             return message;
         }
 
         
-        public string GetReturnMessage()
+        /*public string GetReturnMessage()
         {
             socket = new TcpClient(ServerName, ServerPort);
             ns = socket.GetStream();
             reader = new StreamReader(ns, Encoding.UTF8);
-           
 
-            String recieveMessage = reader.ReadLine();
-            string returnMessage = recieveMessage;
+            StringBuilder buildByteToString = new StringBuilder();
+
+            for (int i = 0; i < reader.ReadLine().Length; i++)
+            {
+                buildByteToString.Append(reader.ReadLine()[i].ToString());
+            }
+
+            
             ns.Flush();
 
             reader.Close();
@@ -150,7 +167,7 @@ namespace UseNetApplication.Comm
             return returnMessage;
         }
 
-        /*public string closeConnectionMethod(byte[] userCommand)
+        public string closeConnectionMethod(byte[] userCommand)
         {
             socket = new TcpClient(ServerName, ServerPort);
             ns = socket.GetStream();
@@ -174,7 +191,8 @@ namespace UseNetApplication.Comm
             ns.Flush();
             string closeMessage = buildByteToString.ToString(); 
             return closeMessage;
-        }*/
+        }
+    */
 
     }
 }

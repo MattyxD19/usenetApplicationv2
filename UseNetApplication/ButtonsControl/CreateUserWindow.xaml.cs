@@ -36,9 +36,9 @@ namespace UseNetApplication.ButtonsControl
                 {
                     sw.WriteLine(NewsServerNameTextBox.Text);
                     sw.WriteLine(ServerPortTextBox.Text);
-                    sw.WriteLine(UsernameTextBox.Text);
-                    sw.WriteLine(PasswordTextBox.Text);
                     sw.WriteLine(EmailTextBox.Text);
+                    sw.WriteLine(PasswordTextBox.Text);
+                    sw.WriteLine(UsernameTextBox.Text);
                 }
             }
             else if (File.Exists(path))

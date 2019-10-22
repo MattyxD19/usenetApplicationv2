@@ -54,7 +54,7 @@ namespace UseNetApplication
 
         }
 
-        private void DeleteUserFileBrowser_Click(object sender, RoutedEventArgs e)
+        private void ViewUserFiles_click(object sender, RoutedEventArgs e)
         {
             String path = @"c:\temp";
             OpenFileDialog ofd = new OpenFileDialog();
@@ -82,25 +82,32 @@ namespace UseNetApplication
             createConnection.UserPassword = readUserFile.ReadLine();
 
             createConnection.startConnection();
-            
-            terminal.AppendText(createConnection.GetReturnMessage());
+
+            /*foreach (var item in createConnection.CreateMessage("list"))
+            {
+                NewsgroupList.Items.Add(item);
+            }*/
+
+            terminal.AppendText(createConnection.CreateMessage("list"));
         }
 
         private void InputButton_Click(object sender, RoutedEventArgs e)
         {
-            sendMessageToUsenet = InputText.Text;
-            createConnection.CreateMessage(sendMessageToUsenet);
+            terminal.Clear();
+            
+            createConnection.CreateMessage(sendMessageToUsenet + "\n");
             InputText.Clear();
-            terminal.AppendText(createConnection.GetReturnMessage());
+            terminal.AppendText(createConnection.CreateMessage(InputText.Text + "\n"));
         }
 
         private void InputText_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter) {
+                terminal.Clear();
                 sendMessageToUsenet = InputText.Text;
-                createConnection.CreateMessage(sendMessageToUsenet);
+                createConnection.CreateMessage(sendMessageToUsenet + "\n");
                 InputText.Clear();
-                terminal.AppendText(createConnection.GetReturnMessage());
+                terminal.AppendText(createConnection.CreateMessage(InputText.Text + "\n"));
             }
         }
     }
