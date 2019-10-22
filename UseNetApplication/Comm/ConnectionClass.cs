@@ -150,7 +150,7 @@ namespace UseNetApplication.Comm
             return returnMessage;
         }
 
-        public string closeConnectionMethod(byte[] userCommand)
+        /*public string closeConnectionMethod(byte[] userCommand)
         {
             socket = new TcpClient(ServerName, ServerPort);
             ns = socket.GetStream();
@@ -174,7 +174,7 @@ namespace UseNetApplication.Comm
             ns.Flush();
             string closeMessage = buildByteToString.ToString(); 
             return closeMessage;
-        }
+        }*/
 
     }
 }
