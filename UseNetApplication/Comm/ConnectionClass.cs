@@ -122,8 +122,6 @@ namespace UseNetApplication.Comm
 
             ns.Write(userCommand, 0, userCommand.Length);
 
-            String recieveMessage = reader.ReadLine();
-            message = recieveMessage;
             ns.Flush();
 
             reader.Close();
@@ -133,6 +131,7 @@ namespace UseNetApplication.Comm
             return message;
         }
 
+        
         public string GetReturnMessage()
         {
             socket = new TcpClient(ServerName, ServerPort);
