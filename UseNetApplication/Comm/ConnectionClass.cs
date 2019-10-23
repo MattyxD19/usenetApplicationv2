@@ -86,47 +86,67 @@ namespace UseNetApplication.Comm
         public StringBuilder buildByteToString = new StringBuilder();
         public List<string> listNews = new List<string>();
 
-
-        public string startConnection()
+        public void startConnection()
         {
+            MainWindow main = new MainWindow();
             socket = new TcpClient(serverName, serverPort);
             ns = socket.GetStream();
             reader = new StreamReader(ns, Encoding.UTF8);
 
-            byte[] authUser = Encoding.UTF8.GetBytes("authinfo user " + userEmail + "\n");
-            byte[] authpass = Encoding.UTF8.GetBytes("authinfo PASS " + userPassword + "\n");
+            string recieveMessage = "";
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine(recieveMessage);
+            main.terminal.Text = recieveMessage;
 
-            String recieveMessage = reader.ReadLine();
+            byte[] authUser = Encoding.UTF8.GetBytes("authinfo user " + userEmail + "\n");
+            
+            ns.Flush();
+
+            byte[] authpass = Encoding.UTF8.GetBytes("authinfo PASS " + userPassword + "\n");
+           
+            ns.Flush();
 
             ns.Write(authUser, 0, authUser.Length);
-
-            recieveMessage = reader.ReadLine();
-            Console.WriteLine("Server says: " + recieveMessage);
-
-            ns.Write(authpass, 0, authpass.Length);
-
-            recieveMessage = reader.ReadLine();
-            Console.WriteLine("Server says: " + recieveMessage);
-
+            main.terminal.AppendText(reader.ReadLine());
+            Console.WriteLine("Server says: " + main.RecieveMessageUsenet);
             ns.Flush();
-            return recieveMessage;
-
+            ns.Write(authpass, 0, authpass.Length);
+            main.terminal.AppendText(reader.ReadLine());
+            Console.WriteLine("Server says: " + main.RecieveMessageUsenet);
+            
+            
+            //while(ns.DataAvailable)
+            //{
+            //    Thread.Sleep(25);
+            //    recieveMessage = reader.ReadLine();
+            //    main.RecieveMessageUsenet = recieveMessage;
+            //    Console.WriteLine(main.RecieveMessageUsenet);
+            //}
+            ns.Flush();
+            recieveMessage = main.RecieveMessageUsenet;
+            //return recieveMessage;
         }
 
         public string CreateMessage(string message)
         {
             ns = socket.GetStream();
             string recieveMessage = "";
-            reader = new StreamReader(ns, Encoding.UTF8);
-
             byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
 
             ns.Write(userCommand, 0, userCommand.Length);
 
-            recieveMessage = reader.ReadLine();
-            Console.WriteLine("Server says: " + recieveMessage);
+            if (ns.DataAvailable)
+            {
+                if (ns.CanRead)
+                {
+                    recieveMessage = reader.ReadLine();
+                    Console.WriteLine("Server says: " + recieveMessage);
+                    ns.Flush();
+                }
+                
+            }
 
-            if (message.Equals("quit"))
+            if (userCommand.Equals("quit"))
             {
                 Console.WriteLine("Connection is now closed");
                 Console.WriteLine(reader.ReadLine());
@@ -134,14 +154,14 @@ namespace UseNetApplication.Comm
                 ns.Flush();
                 ns.Close();
                 reader.Close();
-                
+
             }
-            ns.Flush();
-            recieveMessage = returnMessage;
-            return returnMessage;
+
+            Console.WriteLine(recieveMessage);
+            return recieveMessage;
         }
 
-        public IEnumerable<String> CreateList(string message)
+        public List<String> CreateList(string message)
         {
             String recieveMessage = "";
             ns = socket.GetStream();
@@ -152,22 +172,19 @@ namespace UseNetApplication.Comm
 
             recieveMessage = reader.ReadLine();
             Console.WriteLine("Server says: " + recieveMessage);
-            
+            ns.Flush();
                 
-            if (message.Equals("list"))
+            while ((recieveMessage = reader.ReadLine()).Split('\n') != null)
             {
-                while ((recieveMessage = reader.ReadLine()).Split('\n') != null)
-                {
-                    //buildByteToString.Append(recieveMessage);
-                    Console.WriteLine(recieveMessage.ToString());
-                    
-                    yield return recieveMessage;
-                }
+                //buildByteToString.Append(recieveMessage);
+                Console.WriteLine(recieveMessage.ToString());
                 ns.Flush();
-                Console.WriteLine(listNews.Count);
+                listNews.Add(recieveMessage.ToString());
             }
+               
 
-           
+            return listNews;
+
         }
 
         public void createPost()

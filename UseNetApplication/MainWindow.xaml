@@ -8,8 +8,8 @@
         Title="MainWindow" Height="800" Width="1200">
 
     <Grid Background="DarkSlateGray">
-        <TextBox x:Name="terminal" Foreground="LightGreen" BorderThickness="3" BorderBrush="AntiqueWhite" IsReadOnly="True" HorizontalAlignment="Right" VerticalAlignment="Center" Height="627" Width="602" Margin="0,50,10,92" Background="Black" TextWrapping="WrapWithOverflow"/>
-        <ListView x:Name="NewsgroupList" Background="Black" BorderThickness="3" BorderBrush="AntiqueWhite" Foreground="DarkGreen" HorizontalAlignment="Right" VerticalAlignment="Center" Height="627" Width="371" Margin="0,50,629,92"></ListView>
+        <TextBox x:Name="terminal" ScrollViewer.CanContentScroll="True" Foreground="LightGreen" BorderThickness="3" BorderBrush="AntiqueWhite" IsReadOnly="True" HorizontalAlignment="Right" VerticalAlignment="Center" Height="627" Width="602" Margin="0,50,10,92" Background="Black" TextWrapping="WrapWithOverflow"/>
+        <ListView x:Name="NewsgroupList" Background="Black" BorderThickness="3" BorderBrush="AntiqueWhite" Foreground="LightGreen" HorizontalAlignment="Right" VerticalAlignment="Center" Height="627" Width="371" Margin="0,50,629,92"></ListView>
 
         <Label Content="Send Message" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="Gray" FontSize="24" Margin="0,0,164,50" RenderTransformOrigin="0.919,0.429"></Label>
         <TextBox x:Name="InputText" IsEnabled="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="473" Height="30" Margin="0,0,10,25" KeyUp="InputText_KeyUp" FontSize="16"></TextBox>
@@ -19,5 +19,6 @@
         <Button x:Name="InputButton" IsEnabled="False" Content="Send" HorizontalAlignment="Center" VerticalAlignment="Bottom" Background="DimGray" Foreground="LightGreen" FontSize="18" Margin="637,0,505,25" Height="30" Width="50" Click="InputButton_Click"></Button>
         <Button x:Name="ViewUsersFileBrowser" Content="View Users" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="DimGray" Foreground="LightGreen" FontSize="18" Margin="25,0,0,589" Height="40" Click="ViewUserFiles_click" Width="146"></Button>
         <Button x:Name="CreateAPost" Content="Create post" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Center" Background="DimGray" Foreground="LightGreen" FontSize="18" Margin="25,185,0,544" Height="40" Width="146" Click="CreateNewPost_click" ></Button>
+        <Button x:Name="ListPopular" Content="Show favorites" IsEnabled="False" HorizontalAlignment="Left" VerticalAlignment="Center" Background="DimGray" Foreground="LightGreen" FontSize="18" Margin="25,230,0,499" Height="40" Width="146" Click="ListPopular_Click" ></Button>
     </Grid>
 </Window>

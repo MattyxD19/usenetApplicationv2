@@ -1,39 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseNetApplication.Comm
 {
     class SaveNewsGroupClass
     {
-        public void WriteNewsGroupToDoc()
+        public string WriteNewsGroupToDoc(String group)
         {
-            MainWindow mainWindow = new MainWindow();
-
-            DirectoryInfo dir = new DirectoryInfo(@"c:\temp\");
-            dir.CreateSubdirectory("favorites");
-            String path = @"c:\temp\favorites\" + "savedNewsGroup" + ".txt";
-            if (!File.Exists(path))
+            try
             {
-                using (StreamWriter sw = File.CreateText(path))
+                String path = @"c:\temp\savedNewsGroup.txt";
+                if (!File.Exists(path))
                 {
-                    sw.WriteLine(mainWindow.SaveSingleNewsGroup());
-                    sw.Close();
+                    using (StreamWriter sw = File.CreateText(path))
+                    {
+                        
+                        sw.WriteLine(group + "\n");
+                      
+                        sw.Close();
+                    }
+                }
+                else if (File.Exists(path))
+                {
+                    using (TextWriter tw = new StreamWriter(@"c:\temp\savedNewsGroup.txt", append:true))
+                    {
+                        tw.WriteLine(group.ToString());
+                    }
                 }
             }
-            else if (File.Exists(path))
+            catch
             {
-                using (StreamWriter sw2 = new StreamWriter(path))
-                {
-                    sw2.WriteLine(mainWindow.SaveSingleNewsGroup());
-                    sw2.Close();
-                }
+                Console.WriteLine("Error: Nothing was written check SaveNewsGroupClass");
             }
-
-            
+            return "Document saved";
         }
+
+        public string RemoveNewsGroup(string name)
+        {
+
+            String path = @"c:\temp\savedNewsGroup.txt";
+            string tempFile = Path.GetTempFileName();
+
+            using (var sr = new StreamReader(path))
+            using (var sw = new StreamWriter(tempFile))
+            {
+                string line = "";
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line != name)
+                        sw.WriteLine(line);
+                }
+            }
+
+            File.Delete(path);
+            File.Move(tempFile, path);
+
+            return "news group has been removed";
+        }
+
     }
 }

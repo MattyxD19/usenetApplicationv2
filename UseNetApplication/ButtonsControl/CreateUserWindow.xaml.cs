@@ -25,10 +25,9 @@ namespace UseNetApplication.ButtonsControl
             InitializeComponent();
         }
 
-        public MainWindow mainWindow = new MainWindow();
-
         private void SaveNewUser_Click(object sender, RoutedEventArgs e)
         {
+            MainWindow mainWindow = new MainWindow();
             String path = @"c:\temp\" + UsernameTextBox.Text + ".txt";
             if (!File.Exists(path))
             {
