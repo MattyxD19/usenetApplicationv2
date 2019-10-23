@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using UseNetApplication.ButtonsControl;
 using UseNetApplication.Comm;
 
@@ -25,27 +16,31 @@ namespace UseNetApplication
     public partial class MainWindow : Window
     {
 
-        private string sendMessageToUsenet;
+        //private string sendMessageToUsenet;
 
-        public string SendMessageToUsenet
-        {
-            get
-            {
-                return sendMessageToUsenet;
-            }
-            set
-            {
-                sendMessageToUsenet = value;
-            }
-        }
+        //public string SendMessageToUsenet
+        //{
+        //    get
+        //    {
+        //        return sendMessageToUsenet;
+        //    }
+        //    set
+        //    {
+        //        sendMessageToUsenet = value;
+        //    }
+        //}
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        ConnectionClass createConnection = new ConnectionClass();
+        private string sendMessageToUsenet = "";
 
+        ConnectionClass createConnection = new ConnectionClass();
+        NewPostWindow newPost = new NewPostWindow();
+
+        public StringBuilder sb = new StringBuilder();
         private void CreateUser_Click(object sender, RoutedEventArgs e)
         {
             CreateUserWindow objCreationWindow = new CreateUserWindow();
@@ -67,6 +62,8 @@ namespace UseNetApplication
 
         private void ConnectUsenetButton_Click(object sender, RoutedEventArgs e)
         {
+            //terminal.Clear();
+            //NewsgroupList.Items.Clear();
             OpenFileDialog selectUser = new OpenFileDialog();
 
             String path = @"c:\temp";
@@ -80,35 +77,102 @@ namespace UseNetApplication
             createConnection.ServerPort = Int32.Parse(readUserFile.ReadLine());
             createConnection.UserEmail = readUserFile.ReadLine();
             createConnection.UserPassword = readUserFile.ReadLine();
-
-            createConnection.startConnection();
-
-            /*foreach (var item in createConnection.CreateMessage("list"))
+            
+            String status = createConnection.startConnection();
+            if (terminal.Text.Length > 0)
             {
-                NewsgroupList.Items.Add(item);
-            }*/
+                terminal.AppendText(Environment.NewLine);
+            }
 
-            terminal.AppendText(createConnection.CreateMessage("list"));
+            terminal.AppendText(status);
+            InputText.IsEnabled = true;
+            InputButton.IsEnabled = true;
+            CreateAPost.IsEnabled = true;
         }
 
         private void InputButton_Click(object sender, RoutedEventArgs e)
         {
             terminal.Clear();
-            
-            createConnection.CreateMessage(sendMessageToUsenet + "\n");
+            sendMessageToUsenet = terminal.Text;
+            if (sendMessageToUsenet.Equals("quit"))
+            {
+                InputText.IsEnabled = false;
+                InputButton.IsEnabled = false;
+            }
+            else if (sendMessageToUsenet.Equals("save") || sendMessageToUsenet.Equals("Save"))
+            {
+                //nothing should be send to the server
+                Console.WriteLine("saving: ", terminal.Text.Substring(4, terminal.Text.Length) + " to C:/temp/favorites/savedNewsGroup.txt");
+            }
+            else
+            {
+                String serverResponse = createConnection.CreateMessage(sendMessageToUsenet + "\n");
+                if (terminal.Text.Length > 0)
+                {
+                    terminal.AppendText(Environment.NewLine);
+                }
+                terminal.AppendText(serverResponse);
+            }
+
+
+            if (InputText.Text == "" || InputText.Text == null)
+            {
+                InputText.BorderBrush = Brushes.Red;
+            }
             InputText.Clear();
-            terminal.AppendText(createConnection.CreateMessage(InputText.Text + "\n"));
         }
 
         private void InputText_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter) {
                 terminal.Clear();
-                sendMessageToUsenet = InputText.Text;
-                createConnection.CreateMessage(sendMessageToUsenet + "\n");
+                sendMessageToUsenet = terminal.Text;
+                if (sendMessageToUsenet.Equals("quit"))
+                {
+                    InputText.IsEnabled = false;
+                    InputButton.IsEnabled = false;
+                }
+                if (sendMessageToUsenet.Equals("save") || sendMessageToUsenet.Equals("Save"))
+                {
+                    //nothing should be send to the server
+                    Console.WriteLine("saving: ", terminal.Text.Substring(4, terminal.Text.Length) + " to C:/temp/favorites/savedNewsGroup.txt");
+                }
+                else
+                {
+                    String serverResponse = createConnection.CreateMessage(sendMessageToUsenet + "\n");
+                    if (terminal.Text.Length > 0)
+                    {
+                        terminal.AppendText(Environment.NewLine);
+                    }
+                    terminal.AppendText(serverResponse);
+                }
+
+
+                if (InputText.Text == "" || InputText.Text == null)
+                {
+                    InputText.BorderBrush = Brushes.Red;
+                }
                 InputText.Clear();
-                terminal.AppendText(createConnection.CreateMessage(InputText.Text + "\n"));
             }
         }
+
+        private void CreateNewPost_click(object sender, RoutedEventArgs e)
+        {
+            newPost.Show();
+            this.Close();
+        }
+
+        public string SaveSingleNewsGroup()
+        {
+            String savedNewsGroup = "";
+            if (terminal.Text.Substring(4, terminal.Text.Length) == "save" || terminal.Text.Substring(4, terminal.Text.Length) == "Save")
+            {
+                savedNewsGroup = terminal.Text.Substring(4, terminal.Text.Length);
+
+            }
+
+            return savedNewsGroup;
+        }
+
     }
 }

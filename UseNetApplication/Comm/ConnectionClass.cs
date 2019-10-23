@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UseNetApplication.Comm
@@ -76,123 +78,102 @@ namespace UseNetApplication.Comm
             }
         }
 
-        
 
+  
         public TcpClient socket = null;
         public NetworkStream ns = null;
         public StreamReader reader = null;
         public StringBuilder buildByteToString = new StringBuilder();
+        public List<string> listNews = new List<string>();
 
-        public void startConnection()
+
+        public string startConnection()
         {
-            byte[] sendMessage = Encoding.UTF8.GetBytes("" + "\n"); //get From TextBox
+            socket = new TcpClient(serverName, serverPort);
+            ns = socket.GetStream();
+            reader = new StreamReader(ns, Encoding.UTF8);
+
             byte[] authUser = Encoding.UTF8.GetBytes("authinfo user " + userEmail + "\n");
             byte[] authpass = Encoding.UTF8.GetBytes("authinfo PASS " + userPassword + "\n");
-            byte[] userCommand = Encoding.UTF8.GetBytes("" + "\n");
 
-            socket = new TcpClient(serverName, serverPort);
-
-            ns = socket.GetStream();
-
-            reader = new StreamReader(ns, Encoding.UTF8);
             String recieveMessage = reader.ReadLine();
 
             ns.Write(authUser, 0, authUser.Length);
+
             recieveMessage = reader.ReadLine();
-            Console.WriteLine(recieveMessage);
+            Console.WriteLine("Server says: " + recieveMessage);
 
             ns.Write(authpass, 0, authpass.Length);
-            
+
             recieveMessage = reader.ReadLine();
-            Console.WriteLine(recieveMessage);
+            Console.WriteLine("Server says: " + recieveMessage);
 
             ns.Flush();
+            return recieveMessage;
 
-            Console.WriteLine("Got this message {0} back from the server", recieveMessage);
-
-            
-
-            //socket.Close();
-            //ns.Close();
         }
 
         public string CreateMessage(string message)
         {
-            //socket.Connect();
             ns = socket.GetStream();
-            //reader = new StreamReader(ns, Encoding.UTF8);
+            string recieveMessage = "";
+            reader = new StreamReader(ns, Encoding.UTF8);
 
             byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
 
             ns.Write(userCommand, 0, userCommand.Length);
-            String recieveMessage = reader.ReadLine();
-            message = recieveMessage;
 
-            while (reader.Peek() >= 0)
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine("Server says: " + recieveMessage);
+
+            if (message.Equals("quit"))
             {
-                message = reader.ReadLine();
-            }
-
-            Console.WriteLine(message);
-            ns.Flush();
-
-            
-            socket.Close();
-            ns.Close();
-            reader.Close();
-            return message;
-        }
-
-        
-        /*public string GetReturnMessage()
-        {
-            socket = new TcpClient(ServerName, ServerPort);
-            ns = socket.GetStream();
-            reader = new StreamReader(ns, Encoding.UTF8);
-
-            StringBuilder buildByteToString = new StringBuilder();
-
-            for (int i = 0; i < reader.ReadLine().Length; i++)
-            {
-                buildByteToString.Append(reader.ReadLine()[i].ToString());
-            }
-
-            
-            ns.Flush();
-
-            reader.Close();
-            socket.Close();
-            ns.Close();
-
-            return returnMessage;
-        }
-
-        public string closeConnectionMethod(byte[] userCommand)
-        {
-            socket = new TcpClient(ServerName, ServerPort);
-            ns = socket.GetStream();
-            reader = new StreamReader(ns, Encoding.UTF8);
-
-            StringBuilder buildByteToString = new StringBuilder();
-
-            for (int i = 0; i < userCommand.Length; i++)
-            {
-                buildByteToString.Append(userCommand[i].ToString());
-            }
-
-            if (buildByteToString.Equals("quit"))
-            {
-                reader.Close();
+                Console.WriteLine("Connection is now closed");
+                Console.WriteLine(reader.ReadLine());
                 socket.Close();
+                ns.Flush();
                 ns.Close();
-                Console.WriteLine("Connection has been closed");
+                reader.Close();
                 
             }
             ns.Flush();
-            string closeMessage = buildByteToString.ToString(); 
-            return closeMessage;
+            recieveMessage = returnMessage;
+            return returnMessage;
         }
-    */
+
+        public IEnumerable<String> CreateList(string message)
+        {
+            String recieveMessage = "";
+            ns = socket.GetStream();
+            reader = new StreamReader(ns, Encoding.UTF8);
+            byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
+
+            ns.Write(userCommand, 0, userCommand.Length);
+
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine("Server says: " + recieveMessage);
+            
+                
+            if (message.Equals("list"))
+            {
+                while ((recieveMessage = reader.ReadLine()).Split('\n') != null)
+                {
+                    //buildByteToString.Append(recieveMessage);
+                    Console.WriteLine(recieveMessage.ToString());
+                    
+                    yield return recieveMessage;
+                }
+                ns.Flush();
+                Console.WriteLine(listNews.Count);
+            }
+
+           
+        }
+
+        public void createPost()
+        {
+
+        }
 
     }
 }

@@ -61,6 +61,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ButtonsControl\NewPostWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,7 +76,11 @@
     <Compile Include="ButtonsControl\CreateUserWindow.xaml.cs">
       <DependentUpon>CreateUserWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ButtonsControl\NewPostWindow.xaml.cs">
+      <DependentUpon>NewPostWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Comm\ConnectionClass.cs" />
+    <Compile Include="Comm\SaveNewsGroupClass.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
