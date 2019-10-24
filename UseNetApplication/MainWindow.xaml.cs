@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -62,8 +63,9 @@ namespace UseNetApplication
 
         private void ConnectUsenetButton_Click(object sender, RoutedEventArgs e)
         {
-            //terminal.Clear();
-            //NewsgroupList.Items.Clear();
+            terminal.AcceptsReturn = true;
+            terminal.Clear();
+            NewsgroupList.Items.Clear();
             OpenFileDialog selectUser = new OpenFileDialog();
 
             String path = @"c:\temp";
@@ -77,10 +79,13 @@ namespace UseNetApplication
             createConnection.ServerPort = Int32.Parse(readUserFile.ReadLine());
             createConnection.UserEmail = readUserFile.ReadLine();
             createConnection.UserPassword = readUserFile.ReadLine();
-            
-            createConnection.startConnection();
-           
-            
+
+            string currentText = terminal.Text;
+            string pendingMessage = createConnection.startConnection();
+            terminal.Clear();
+            terminal.AppendText(currentText + "\n" + pendingMessage);
+
+
             InputText.IsEnabled = true;
             InputButton.IsEnabled = true;
             CreateAPost.IsEnabled = true;
@@ -89,6 +94,7 @@ namespace UseNetApplication
 
         private void InputButton_Click(object sender, RoutedEventArgs e)
         {
+            terminal.AcceptsReturn = true;
             sendMessageToUsenet = InputText.Text;
             Console.WriteLine(sendMessageToUsenet);
             if (sendMessageToUsenet.Equals("quit"))
@@ -96,37 +102,48 @@ namespace UseNetApplication
                 InputText.IsEnabled = false;
                 InputButton.IsEnabled = false;
             }
-            else if (sendMessageToUsenet.Equals("list"))
+            if (sendMessageToUsenet.Equals("list"))
             {
-                foreach (var item in createConnection.CreateList(sendMessageToUsenet + "\n"))
+                NewsgroupList.Items.Clear();
+                createConnection.CreateList(sendMessageToUsenet + "\n");
+                Thread.Sleep(250);
+                foreach (var item in createConnection.listNews)
                 {
-                    terminal.AppendText(item);
+                    NewsgroupList.Items.Add(item);
                 }
-                terminal.Clear();
+
 
             }
-
             if (sendMessageToUsenet.Contains("save"))
             {
-                //nothing should be send to the server
-                string savedName = sendMessageToUsenet.Remove(0, 5);
-                saveGroup.WriteNewsGroupToDoc(savedName);
-                Console.WriteLine("saving: " + savedName + " to C:/temp/savedNewsGroup.txt");
+                TerminalCommands(sendMessageToUsenet);
             }
-
             if (sendMessageToUsenet.Contains("remove"))
             {
-                //nothing should be send to the server
-                string removeName = sendMessageToUsenet.Remove(0, 7);
-                saveGroup.RemoveNewsGroup(removeName);
-                Console.WriteLine("removing: " + removeName + " from C:/temp/savedNewsGroup.txt");
+                TerminalCommands(sendMessageToUsenet);
             }
-
-
+            if (sendMessageToUsenet.Contains("article"))
+            {
+                TerminalCommands(sendMessageToUsenet);
+            }
+            if (sendMessageToUsenet.Contains("search"))
+            {
+                TerminalCommands(sendMessageToUsenet);
+            }
 
             if (InputText.Text == "" || InputText.Text == null)
             {
                 InputText.BorderBrush = Brushes.Red;
+            }
+            else
+            {
+                createConnection.CreateMessage(sendMessageToUsenet + "\n");
+                foreach (var item in createConnection.messageList)
+                {
+                    string currentText = terminal.Text;
+                    string pendingItem = item;
+                    terminal.AppendText(currentText + "\n" + pendingItem);
+                }
             }
             InputText.Clear();
         }
@@ -134,7 +151,7 @@ namespace UseNetApplication
         private void InputText_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter) {
-                
+                terminal.AcceptsReturn = true;
                 sendMessageToUsenet = InputText.Text;
                 Console.WriteLine(sendMessageToUsenet);
                 if (sendMessageToUsenet.Equals("quit"))
@@ -142,37 +159,50 @@ namespace UseNetApplication
                     InputText.IsEnabled = false;
                     InputButton.IsEnabled = false;
                 }
-                else if (sendMessageToUsenet.Equals("list"))
+                if (sendMessageToUsenet.Equals("list"))
                 {
-                    foreach (var item in createConnection.CreateList(sendMessageToUsenet + "\n"))
-                    {
-                        terminal.AppendText(item);
-                    }
                     terminal.Clear();
-
+                    NewsgroupList.Items.Clear();
+                    createConnection.CreateList(sendMessageToUsenet + "\n");
+                    Thread.Sleep(250);
+                    foreach (var item in createConnection.listNews)
+                    {
+                       
+                        NewsgroupList.Items.Add(item);
+                       
+                    }
                 }
-
                 if (sendMessageToUsenet.Contains("save"))
                 {
-                    //nothing should be send to the server
-                    string savedName = sendMessageToUsenet.Remove(0, 5);
-                    saveGroup.WriteNewsGroupToDoc(savedName);
-                    Console.WriteLine("saving: " + savedName + " to C:/temp/savedNewsGroup.txt");
+                    TerminalCommands(sendMessageToUsenet);
                 }
-
                 if (sendMessageToUsenet.Contains("remove"))
                 {
-                    //nothing should be send to the server
-                    string removeName = sendMessageToUsenet.Remove(0, 7);
-                    saveGroup.RemoveNewsGroup(removeName);
-                    Console.WriteLine("removing: " + removeName + " from C:/temp/savedNewsGroup.txt");
+                    TerminalCommands(sendMessageToUsenet);
                 }
-                
-
-
+                if (sendMessageToUsenet.Contains("article"))
+                {
+                    TerminalCommands(sendMessageToUsenet);
+                }
+                if (sendMessageToUsenet.Contains("search"))
+                {
+                    TerminalCommands(sendMessageToUsenet);
+                }
                 if (InputText.Text == "" || InputText.Text == null)
                 {
                     InputText.BorderBrush = Brushes.Red;
+                }
+                else
+                {
+                    createConnection.CreateMessage(sendMessageToUsenet + "\n");
+
+                    foreach (var item in createConnection.messageList)
+                    {
+                        //string currentText = terminal.Text;
+                        string pendingItem = item.ToString();
+                        terminal.AppendText(pendingItem);
+                    }
+                    createConnection.messageList.Clear();
                 }
                 InputText.Clear();
             }
@@ -202,6 +232,59 @@ namespace UseNetApplication
             {
                 NewsgroupList.Items.Add(item);
             }
+        }
+
+        public void TerminalCommands(string command)
+        {
+            if (command.Contains("save"))
+            {
+                //nothing should be send to the server
+                string savedName = command.Remove(0, 5);
+                saveGroup.WriteNewsGroupToDoc(savedName);
+                Console.WriteLine("saving: " + savedName + " to C:/temp/savedNewsGroup.txt");
+            }
+            if (command.Contains("remove"))
+            {
+                //nothing should be send to the server
+                string removeName = command.Remove(0, 7);
+                saveGroup.RemoveNewsGroup(removeName);
+                Console.WriteLine("removing: " + removeName + " from C:/temp/savedNewsGroup.txt");
+            }
+            if (command.Contains("article"))
+            {
+                createConnection.ReadArticle(command);
+                foreach (var item in createConnection.articleList)
+                {
+                    string currentText = InputText.Text;
+                    string pendingText = item;
+                    terminal.Clear();
+                    terminal.AppendText(currentText + "\n" + pendingText);
+                    
+                }
+            }
+
+            if (command.Contains("search"))
+            {
+                string searchName = command.Remove(0, 7);
+                //not functional yet...
+                foreach (string item in NewsgroupList.Items)
+                {
+                    if (item.Contains(searchName))
+                    {
+                        NewsgroupList.Items.Add(item);
+                    }                  
+                }
+            }
+
+        }
+
+        private void NewsgroupList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Console.WriteLine("item clicked: " + NewsgroupList.SelectedItems);
+            string selectedNewsGroup = NewsgroupList.SelectedItems.ToString();
+            string[] groupSelected = selectedNewsGroup.Split(' ');
+            Console.WriteLine(groupSelected);
+            
         }
     }
 }

@@ -85,10 +85,12 @@ namespace UseNetApplication.Comm
         public StreamReader reader = null;
         public StringBuilder buildByteToString = new StringBuilder();
         public List<string> listNews = new List<string>();
+        public List<string> articleList = new List<string>();
+        public List<string> messageList = new List<string>();
 
-        public void startConnection()
+        public string startConnection()
         {
-            MainWindow main = new MainWindow();
+            
             socket = new TcpClient(serverName, serverPort);
             ns = socket.GetStream();
             reader = new StreamReader(ns, Encoding.UTF8);
@@ -96,55 +98,31 @@ namespace UseNetApplication.Comm
             string recieveMessage = "";
             recieveMessage = reader.ReadLine();
             Console.WriteLine(recieveMessage);
-            main.terminal.Text = recieveMessage;
+            
 
             byte[] authUser = Encoding.UTF8.GetBytes("authinfo user " + userEmail + "\n");
-            
-            ns.Flush();
-
             byte[] authpass = Encoding.UTF8.GetBytes("authinfo PASS " + userPassword + "\n");
            
-            ns.Flush();
 
             ns.Write(authUser, 0, authUser.Length);
-            main.terminal.AppendText(reader.ReadLine());
-            Console.WriteLine("Server says: " + main.RecieveMessageUsenet);
-            ns.Flush();
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine("Server says: " + recieveMessage);
+            
+
             ns.Write(authpass, 0, authpass.Length);
-            main.terminal.AppendText(reader.ReadLine());
-            Console.WriteLine("Server says: " + main.RecieveMessageUsenet);
-            
-            
-            //while(ns.DataAvailable)
-            //{
-            //    Thread.Sleep(25);
-            //    recieveMessage = reader.ReadLine();
-            //    main.RecieveMessageUsenet = recieveMessage;
-            //    Console.WriteLine(main.RecieveMessageUsenet);
-            //}
-            ns.Flush();
-            recieveMessage = main.RecieveMessageUsenet;
-            //return recieveMessage;
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine("Server says: " + recieveMessage);
+
+            return recieveMessage;
         }
 
-        public string CreateMessage(string message)
+        public List<String> CreateMessage(string message)
         {
             ns = socket.GetStream();
             string recieveMessage = "";
             byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
 
             ns.Write(userCommand, 0, userCommand.Length);
-
-            if (ns.DataAvailable)
-            {
-                if (ns.CanRead)
-                {
-                    recieveMessage = reader.ReadLine();
-                    Console.WriteLine("Server says: " + recieveMessage);
-                    ns.Flush();
-                }
-                
-            }
 
             if (userCommand.Equals("quit"))
             {
@@ -154,11 +132,20 @@ namespace UseNetApplication.Comm
                 ns.Flush();
                 ns.Close();
                 reader.Close();
+            }
+
+            while (reader.Peek() >= 0)
+            {
+                if ((recieveMessage = reader.ReadLine()) != null)
+                {
+                    Console.WriteLine(recieveMessage.ToString());
+                    ns.Flush();
+                    messageList.Add(recieveMessage.ToString());
+                }
 
             }
 
-            Console.WriteLine(recieveMessage);
-            return recieveMessage;
+            return messageList;
         }
 
         public List<String> CreateList(string message)
@@ -174,16 +161,43 @@ namespace UseNetApplication.Comm
             Console.WriteLine("Server says: " + recieveMessage);
             ns.Flush();
                 
-            while ((recieveMessage = reader.ReadLine()).Split('\n') != null)
+            while (reader.Peek() >= 0)
             {
-                //buildByteToString.Append(recieveMessage);
-                Console.WriteLine(recieveMessage.ToString());
-                ns.Flush();
-                listNews.Add(recieveMessage.ToString());
+                if ((recieveMessage = reader.ReadLine()) != null)
+                {
+                    Console.WriteLine(recieveMessage.ToString());
+                    ns.Flush();
+                    listNews.Add(recieveMessage.ToString());
+                }
+                
             }
-               
-
             return listNews;
+        }
+
+        public List<String> ReadArticle(string message)
+        {
+            string recieveMessage = "";
+            ns = socket.GetStream();
+            reader = new StreamReader(ns, Encoding.UTF8);
+            byte[] userCommand = Encoding.UTF8.GetBytes(message + "\n");
+
+            ns.Write(userCommand, 0, userCommand.Length);
+
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine(recieveMessage);
+            ns.Flush();
+
+            while (reader.Peek() >= 0)
+            {
+                if ((recieveMessage = reader.ReadLine()) != null)
+                {
+                    Console.WriteLine(recieveMessage.ToString());
+                    ns.Flush();
+                    articleList.Add(recieveMessage.ToString());
+                }
+
+            }
+            return articleList;
 
         }
 
