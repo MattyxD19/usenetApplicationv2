@@ -25,6 +25,13 @@ namespace UseNetApplication.ButtonsControl
             InitializeComponent();
         }
 
+        /*
+         * When the user is done writing a new article
+         * it will be saved in the "articles" folder at c:\temp\Articles
+         * 
+         * it is not fully complete yet
+         */
+
         private void SavePost_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();

@@ -25,6 +25,23 @@ namespace UseNetApplication.ButtonsControl
             InitializeComponent();
         }
 
+        /*
+         * before the user can use the newsreader, a new user is required
+         * when the user has typed their information inside the newly opened window
+         * and pressed "save user" the information will be stored in a textfile at:
+         * c:\temp\username.txt
+         * 
+         * the textfile is also used when the user wants to connect to the usenet
+         * where the following is read
+         * server name
+         * server port
+         * email
+         * password
+         * 
+         * if a user creates a new user with the same username an error will say
+         * that the current username already exits, it is done to avoid duplicates
+         */
+
         private void SaveNewUser_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();

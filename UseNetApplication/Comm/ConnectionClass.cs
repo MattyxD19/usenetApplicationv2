@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace UseNetApplication.Comm
 {
@@ -83,10 +79,21 @@ namespace UseNetApplication.Comm
         public TcpClient socket = null;
         public NetworkStream ns = null;
         public StreamReader reader = null;
-        public StringBuilder buildByteToString = new StringBuilder();
         public List<string> listNews = new List<string>();
         public List<string> articleList = new List<string>();
         public List<string> messageList = new List<string>();
+
+
+        /**
+         *when the user clicks on the "connect" button in the main window
+         * and have selected the desired file, the fil will then be read for
+         * servername
+         * serverport
+         * email
+         * password
+         * then each value is assigned in this method
+         * by doing this the user doesnt have to enter a single line in the inputtextBox
+         */
 
         public string startConnection()
         {
@@ -116,6 +123,12 @@ namespace UseNetApplication.Comm
             return recieveMessage;
         }
 
+        /**
+         * since there was huge problems with recieving multiple lines from the server
+         * a list was created so that the main window can iterate throug the list
+         * and add each item to the termnial display
+         */
+
         public List<String> CreateMessage(string message)
         {
             ns = socket.GetStream();
@@ -134,19 +147,33 @@ namespace UseNetApplication.Comm
                 reader.Close();
             }
 
+
+            recieveMessage = reader.ReadLine();
+            Console.WriteLine(recieveMessage);
+            messageList.Add(recieveMessage);
+
             while (reader.Peek() >= 0)
             {
+                
                 if ((recieveMessage = reader.ReadLine()) != null)
                 {
-                    Console.WriteLine(recieveMessage.ToString());
+                    
+                    Console.WriteLine(recieveMessage);
+                    messageList.Add(recieveMessage);
                     ns.Flush();
-                    messageList.Add(recieveMessage.ToString());
                 }
 
             }
-
+            
             return messageList;
         }
+
+        /**
+         * when the user types "list" the listview on the left will be populated
+         * a command is send to the server, where all the newsgroups then are iterated
+         * and added to the listnews list
+         * and in return send the main window
+         */
 
         public List<String> CreateList(string message)
         {
@@ -174,6 +201,12 @@ namespace UseNetApplication.Comm
             return listNews;
         }
 
+        /**
+         * To make sure that every line of text is returned
+         * the whole article is added to yet another list
+         * which is also iterated through like the previous two lists
+         */
+
         public List<String> ReadArticle(string message)
         {
             string recieveMessage = "";
@@ -198,9 +231,12 @@ namespace UseNetApplication.Comm
 
             }
             return articleList;
-
         }
 
+        /*
+         * the user is not yet able to post a new article
+         * but the code would be entered here
+         */
         public void createPost()
         {
 

@@ -22,22 +22,10 @@ namespace UseNetApplication
         {
             InitializeComponent();
         }
-
-        private string recieveMessageUsenet;
-        public string RecieveMessageUsenet
-        {
-            get
-            {
-                return recieveMessageUsenet;
-            }
-            set
-            {
-                recieveMessageUsenet = value;
-            }
-        }
-
+        // A global string used all over in this class
         private string sendMessageToUsenet = "";
 
+        
         ConnectionClass createConnection = new ConnectionClass();
         NewPostWindow newPost = new NewPostWindow();
         SaveNewsGroupClass saveGroup = new SaveNewsGroupClass();
@@ -61,9 +49,20 @@ namespace UseNetApplication
             ofd.ShowDialog();
         }
 
+        /*
+         * The user has to click the "connect" button before a connection can be made
+         * when the button is clicked, a filedialog will open and the user has to select
+         * the textfile with the username they want to use
+         * 
+         * the selected textfile is then read, and the information is passed to the connection class
+         * 
+         * The terminal display will the show "281 Ok." if they are connected
+         * 
+         * The disabled buttons and textbox will then be enabled as well
+         */
+
         private void ConnectUsenetButton_Click(object sender, RoutedEventArgs e)
         {
-            terminal.AcceptsReturn = true;
             terminal.Clear();
             NewsgroupList.Items.Clear();
             OpenFileDialog selectUser = new OpenFileDialog();
@@ -80,10 +79,9 @@ namespace UseNetApplication
             createConnection.UserEmail = readUserFile.ReadLine();
             createConnection.UserPassword = readUserFile.ReadLine();
 
-            string currentText = terminal.Text;
             string pendingMessage = createConnection.startConnection();
             terminal.Clear();
-            terminal.AppendText(currentText + "\n" + pendingMessage);
+            terminal.AppendText(pendingMessage);
 
 
             InputText.IsEnabled = true;
@@ -91,10 +89,20 @@ namespace UseNetApplication
             CreateAPost.IsEnabled = true;
             ListPopular.IsEnabled = true;
         }
+        
+        /*
+         * Since the user can decide to press the "send" button to send their command
+         * instead of pressing enter, two methods has to be created with the same code
+         * 
+         * they both read the input textbox for a command, where it then decides what to do
+         * 
+         * some commands have been defined to do specific operations so that the user
+         * can recieve all the data which the server will send
+         */
 
         private void InputButton_Click(object sender, RoutedEventArgs e)
         {
-            terminal.AcceptsReturn = true;
+            terminal.Clear();
             sendMessageToUsenet = InputText.Text;
             Console.WriteLine(sendMessageToUsenet);
             if (sendMessageToUsenet.Equals("quit"))
@@ -104,15 +112,16 @@ namespace UseNetApplication
             }
             if (sendMessageToUsenet.Equals("list"))
             {
+                terminal.Clear();
                 NewsgroupList.Items.Clear();
                 createConnection.CreateList(sendMessageToUsenet + "\n");
                 Thread.Sleep(250);
                 foreach (var item in createConnection.listNews)
                 {
+
                     NewsgroupList.Items.Add(item);
                 }
-
-
+                terminal.Clear();
             }
             if (sendMessageToUsenet.Contains("save"))
             {
@@ -137,23 +146,39 @@ namespace UseNetApplication
             }
             else
             {
+                createConnection.listNews.Clear();
                 createConnection.CreateMessage(sendMessageToUsenet + "\n");
+                terminal.Clear();
                 foreach (var item in createConnection.messageList)
                 {
-                    string currentText = terminal.Text;
-                    string pendingItem = item;
-                    terminal.AppendText(currentText + "\n" + pendingItem);
+                    terminal.AppendText("\n" + item);
                 }
+                createConnection.messageList.Clear();
             }
             InputText.Clear();
         }
 
+        /*
+        * Since the user can decide to press the "send" button to send their command
+        * instead of pressing enter, two methods has to be created with the same code
+        * 
+        * they both read the input textbox for a command, where it then decides what to do
+        * 
+        * some commands have been defined to do specific operations so that the user
+        * can recieve all the data which the server will send
+        * 
+        * this eventhandler has also been modified to use keyevent.Enter as a valid 
+        * keypress instead of the "up" arrowkey
+        */
+
         private void InputText_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter) {
-                terminal.AcceptsReturn = true;
+                terminal.Clear();
+
                 sendMessageToUsenet = InputText.Text;
                 Console.WriteLine(sendMessageToUsenet);
+
                 if (sendMessageToUsenet.Equals("quit"))
                 {
                     InputText.IsEnabled = false;
@@ -167,10 +192,10 @@ namespace UseNetApplication
                     Thread.Sleep(250);
                     foreach (var item in createConnection.listNews)
                     {
-                       
                         NewsgroupList.Items.Add(item);
-                       
                     }
+                    createConnection.listNews.Clear();
+                    terminal.Clear();
                 }
                 if (sendMessageToUsenet.Contains("save"))
                 {
@@ -194,15 +219,15 @@ namespace UseNetApplication
                 }
                 else
                 {
+                    createConnection.listNews.Clear();
                     createConnection.CreateMessage(sendMessageToUsenet + "\n");
-
+                    terminal.Clear();
                     foreach (var item in createConnection.messageList)
                     {
-                        //string currentText = terminal.Text;
-                        string pendingItem = item.ToString();
-                        terminal.AppendText(pendingItem);
+                        terminal.AppendText("\n" + item);
                     }
                     createConnection.messageList.Clear();
+                    
                 }
                 InputText.Clear();
             }
@@ -213,6 +238,16 @@ namespace UseNetApplication
             newPost.Show();
             this.Close();
         }
+
+        /*
+         * the user can decide to have the NewsGroupList populated
+         * with their favorite newsgroup
+         * 
+         * they just have to click the "show favorites" button
+         * and then the textfile called "savedNewsGroup" will be
+         * read for information, whereafter the NewsGroupList is 
+         * populated
+         */
 
         private void ListPopular_Click(object sender, RoutedEventArgs e)
         {
@@ -233,6 +268,12 @@ namespace UseNetApplication
                 NewsgroupList.Items.Add(item);
             }
         }
+
+
+        /*
+         * This method contains predetermined commands that the user can send to the server
+         * 
+         */
 
         public void TerminalCommands(string command)
         {
@@ -255,10 +296,9 @@ namespace UseNetApplication
                 createConnection.ReadArticle(command);
                 foreach (var item in createConnection.articleList)
                 {
-                    string currentText = InputText.Text;
                     string pendingText = item;
                     terminal.Clear();
-                    terminal.AppendText(currentText + "\n" + pendingText);
+                    terminal.AppendText("\n" + pendingText);
                     
                 }
             }
@@ -278,13 +318,20 @@ namespace UseNetApplication
 
         }
 
+        /*
+         * the user should also be able to search the NewsGroupList for newsgroups
+         * so they easily can find them for whatever reason they see fit
+         */
+
         private void NewsgroupList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("item clicked: " + NewsgroupList.SelectedItems);
-            string selectedNewsGroup = NewsgroupList.SelectedItems.ToString();
-            string[] groupSelected = selectedNewsGroup.Split(' ');
-            Console.WriteLine(groupSelected);
             
+            Console.WriteLine("item clicked: " + NewsgroupList.SelectedItem.ToString());
+            string selectedNewsGroup = NewsgroupList.SelectedItems.ToString();
+            Console.WriteLine(selectedNewsGroup.ToString());
+            string message = "group " + selectedNewsGroup.ToString();
+            createConnection.CreateMessage(message + "\n");
+            Console.WriteLine(message);
         }
     }
 }

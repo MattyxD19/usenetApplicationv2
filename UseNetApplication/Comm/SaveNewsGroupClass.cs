@@ -5,6 +5,11 @@ namespace UseNetApplication.Comm
 {
     class SaveNewsGroupClass
     {
+
+        /*
+        * When the user writes "save 'newsgroupname" 
+        * the newsgroup is saved in the text file "savedNewsGroup.txt" 
+        */
         public string WriteNewsGroupToDoc(String group)
         {
             try
@@ -34,6 +39,11 @@ namespace UseNetApplication.Comm
             }
             return "Document saved";
         }
+
+        /*
+         * When the user writes "remove 'newsgroupname" 
+         * the newsgroup inside the text file is removed 
+         */
 
         public string RemoveNewsGroup(string name)
         {
